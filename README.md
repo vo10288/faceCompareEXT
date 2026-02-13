@@ -14,6 +14,6 @@ powershell.exe -ExecutionPolicy Bypass -File .\setup.ps1
       -> face_recognition_model-weights_manifest.json
 
 === Setup completato! ===
-Carica in Chrome/Edge: chrome://extensions -> Carica estensione non pacchettizzata -> C:\Users\Administrator\Desktop\tag\face-compare-v1.1\face-compare
+Carica in Chrome/Edge: chrome://extensions -> Carica estensione non pacchettizzata -> C:\Users\pincopallino\Desktop\tag\face-compare-v1.1\face-compare
 
 
