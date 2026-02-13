@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; width: 480px; padding: 14px; background: #f8fafc; }
+    h2 { font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 10px; text-align: center; }
+
+    .slots { display: flex; gap: 10px; margin-bottom: 10px; }
+    .slot {
+      flex: 1; background: #fff; border: 2px dashed #cbd5e1; border-radius: 10px;
+      padding: 10px; text-align: center; min-height: 180px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: border-color 0.2s;
+    }
+    .slot.has-image { border-style: solid; border-color: #94a3b8; }
+    .slot.match-yes { border-color: #22c55e; }
+    .slot.match-no { border-color: #ef4444; }
+
+    .slot-label {
+      font-size: 13px; font-weight: 700; color: #475569;
+      margin-bottom: 6px;
+    }
+    .slot img.preview {
+      width: 100%; max-height: 140px; object-fit: contain;
+      border-radius: 6px; margin-bottom: 6px;
+    }
+    .slot .hint { font-size: 11px; color: #94a3b8; }
+
+    /* Face picker */
+    .face-picker {
+      display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;
+      margin: 6px 0;
+    }
+    .face-thumb {
+      cursor: pointer; border-radius: 6px; overflow: hidden;
+      border: 3px solid #e2e8f0; transition: border-color 0.15s;
+    }
+    .face-thumb.selected { border-color: #2563eb; }
+    .face-thumb img { width: 48px; height: 48px; display: block; object-fit: cover; }
+
+    /* Buttons */
+    .slot-actions { display: flex; gap: 4px; width: 100%; margin-top: 6px; }
+    .btn-upload, .btn-clear {
+      flex: 1; padding: 6px; border: none; border-radius: 6px;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+    }
+    .btn-upload { background: #e0e7ff; color: #3730a3; }
+    .btn-upload:hover { background: #c7d2fe; }
+    .btn-clear { background: #fee2e2; color: #b91c1c; }
+    .btn-clear:hover { background: #fecaca; }
+
+    /* Compare button */
+    .btn-compare {
+      width: 100%; padding: 12px; border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      background: #2563eb; color: #fff;
+      transition: background 0.2s;
+    }
+    .btn-compare:hover { background: #1d4ed8; }
+    .btn-compare:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    /* Result */
+    .result {
+      margin-top: 12px; padding: 14px; border-radius: 10px;
+      text-align: center; font-size: 14px; font-weight: 600;
+      display: none;
+    }
+    .result.match { background: #f0fdf4; color: #166534; border: 2px solid #86efac; }
+    .result.no-match { background: #fef2f2; color: #991b1b; border: 2px solid #fca5a5; }
+    .result .score { font-size: 28px; font-weight: 800; display: block; margin: 4px 0; }
+    .result .detail { font-size: 12px; font-weight: 400; opacity: 0.8; }
+
+    /* Meter */
+    .meter-wrap { margin: 10px auto; width: 80%; }
+    .meter {
+      height: 10px; border-radius: 5px; background: #e2e8f0; overflow: hidden;
+    }
+    .meter-fill {
+      height: 100%; border-radius: 5px; transition: width 0.5s ease;
+    }
+    .meter-labels { display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; margin-top: 2px; }
+
+    #modelStatus { font-size: 11px; text-align: center; margin-bottom: 8px; color: #64748b; }
+    #err { color: #b91c1c; font-size: 12px; text-align: center; margin: 6px 0; display: none; }
+
+    .info-text { font-size: 11px; color: #64748b; text-align: center; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>🔍 Face Compare 1:1</h2>
+  <div id="modelStatus">⏳ Caricamento modelli…</div>
+  <div id="err"></div>
+
+  <div class="slots">
+    <!-- Slot A -->
+    <div class="slot" id="slotA">
+      <div class="slot-label">Volto A</div>
+      <img class="preview" id="previewA" style="display:none;" />
+      <div class="face-picker" id="pickerA"></div>
+      <div class="hint" id="hintA">Tasto destro → "Volto A"<br>oppure carica file ↓</div>
+      <div class="slot-actions">
+        <button class="btn-upload" id="uploadBtnA">📁 Carica</button>
+        <button class="btn-clear" id="clearA">✕</button>
+      </div>
+      <input type="file" accept="image/*" id="fileA" style="display:none;" />
+    </div>
+
+    <!-- Slot B -->
+    <div class="slot" id="slotB">
+      <div class="slot-label">Volto B</div>
+      <img class="preview" id="previewB" style="display:none;" />
+      <div class="face-picker" id="pickerB"></div>
+      <div class="hint" id="hintB">Tasto destro → "Volto B"<br>oppure carica file ↓</div>
+      <div class="slot-actions">
+        <button class="btn-upload" id="uploadBtnB">📁 Carica</button>
+        <button class="btn-clear" id="clearB">✕</button>
+      </div>
+      <input type="file" accept="image/*" id="fileB" style="display:none;" />
+    </div>
+  </div>
+
+  <button class="btn-compare" id="compare" disabled>⚡ Confronta volti</button>
+
+  <div class="result" id="result">
+    <span id="resultLabel"></span>
+    <span class="score" id="resultScore"></span>
+    <div class="meter-wrap">
+      <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
+      <div class="meter-labels"><span>Diversi</span><span>Identici</span></div>
+    </div>
+    <span class="detail" id="resultDetail"></span>
+  </div>
+
+  <div class="info-text">
+    Tutto locale – nessun dato inviato a server esterni.<br>
+    Soglia consigliata: distanza &lt; 0.4 = stessa persona
+  </div>
+
+  <script src="face-api.min.js"></script>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

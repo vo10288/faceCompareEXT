@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Face Compare 1:1",
+  "version": "1.0.0",
+  "description": "Confronto 1:1 tra due volti. Carica da file o seleziona dal web con tasto destro. Tutto locale con face-api.js.",
+  "permissions": ["activeTab", "scripting", "contextMenus"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_popup": "popup.html", "default_title": "Face Compare 1:1" },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["models/*", "face-api.min.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
